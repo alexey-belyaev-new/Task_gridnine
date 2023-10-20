@@ -1,50 +1,57 @@
 package com.gridnine.testing;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.util.LinkedList;
 import java.util.List;
 
 public class FilterFlight implements InterfaceFilterFlight {
-    DateTimeFormatter fmt =
-            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
-
+    boolean flag = false;
     @Override
-    public void departureToCurrentMoment(List<Flight> listFlight) {
-        LocalDateTime timeNow = LocalDateTime.now();
+    public void departureToCurrentMoment(List<Flight> listFlight, LocalDateTime timeNow) {
+        List<Flight> fl = new LinkedList<>();
         for(Flight item: listFlight){
             for(Segment seg: item.getSegments()){
-                if(seg.getDepartureDate().isBefore(timeNow)){
-                    System.out.println("Вылет до текущего момента времени " +
-                                seg.getDepartureDate().format(fmt));
-                }
+                flag = seg.getDepartureDate().isBefore(timeNow);
+            }
+            if(!flag){
+                fl.add(item);
             }
         }
+        fl.forEach(System.out::println);
+        flag = false;
     }
 
     @Override
     public void arrivalBeforeDeparture(List<Flight> listFlight) {
+        List<Flight> fl = new LinkedList<>();
         for(Flight item: listFlight){
-            for(Segment seg: item.getSegments()){
-                if(seg.getArrivalDate().isBefore(seg.getDepartureDate())){
-                    System.out.println("Cегменты с датой прилёта раньше даты вылета " +
-                                seg.getArrivalDate().format(fmt) + " | " +
-                                seg.getDepartureDate().format(fmt));
-                }
+            for(Segment seg: item.getSegments()) {
+                flag = seg.getArrivalDate().isBefore(seg.getDepartureDate());
+            }
+            if(!flag){
+                fl.add(item);
             }
         }
+        fl.forEach(System.out::println);
+        flag = false;
     }
 
     @Override
-    public void timeOnEarthExceedsTwoHours(List<Flight> listFlight) {
-        int size = listFlight.size();
+    public void timeOnEarthExceedsTwoHours(List<Flight> listFlight, int hours) {
+        List<Flight> fl = new LinkedList<>();
         for(Flight item: listFlight){
-            for(Segment seg: item.getSegments()){
-                if(seg.getArrivalDate().plusHours(2).isBefore(seg.getDepartureDate())){
-                    System.out.println("Cегменты, общее время которых на земле превышает два часа " +
-                            seg.getArrivalDate().format(fmt) + " | " +
-                            seg.getDepartureDate().format(fmt));
-                }
+            int sizeFlight= item.getSegments().size();
+            for (int i = 1; i < sizeFlight - 1; i++) {
+                flag = item.getSegments().get(i).
+                        getArrivalDate().
+                        plusHours(hours).
+                        isBefore(item.getSegments().get(i + 1).getDepartureDate());
+            }
+            if(!flag){
+                fl.add(item);
             }
         }
+        fl.forEach(System.out::println);
+        flag = false;
     }
 }
